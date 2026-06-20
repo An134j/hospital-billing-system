@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Select Tests</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
+
+    .header {
+      background: #1a73e8;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 { font-size: 18px; }
+    .logout { cursor: pointer; font-size: 13px; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 6px; }
+
+    .container { max-width: 750px; margin: 24px auto; padding: 0 16px; }
+
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
+
+    .card h2 { font-size: 16px; color: #1a73e8; margin-bottom: 16px; }
+
+    /* Search & Filter */
+    .top-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+    .search-box { flex: 1; padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+    .search-box:focus { border-color: #1a73e8; }
+    select { padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #e8f0fe; }
+    thead th { padding: 12px 14px; text-align: left; font-size: 13px; color: #1a73e8; }
+    tbody tr { border-bottom: 1px solid #f0f0f0; }
+    tbody tr:hover { background: #fafafa; }
+    tbody td { padding: 12px 14px; font-size: 14px; color: #333; }
+    .price { color: #2e7d32; font-weight: 600; }
+    .category { background: #e8f0fe; color: #1a73e8; padding: 2px 8px; border-radius: 20px; font-size: 12px; }
+    input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-color: #1a73e8; }
+
+    /* Summary */
+    .summary { background: #e8f0fe; border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+    .total-amount { font-size: 24px; font-weight: 700; color: #1a73e8; }
+    .selected-names { font-size: 13px; color: #666; margin-top: 4px; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 12px; margin-top: 20px; }
+    .btn { flex: 1; padding: 13px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-back { background: #f0f0f0; color: #555; }
+    .btn-continue { background: #1a73e8; color: white; }
+    .btn-continue:disabled { background: #b0c8f5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🏥 Select Tests</h1>
+    <span class="logout" onclick="logout()">Logout</span>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>Available Tests</h2>
+
+      <div class="top-bar">
+        <input type="text" class="search-box" placeholder="🔍 Search test..." oninput="filterTests()" id="searchInput"/>
+        <select onchange="filterTests()" id="categoryFilter">
+          <option value="">All Categories</option>
+          <option value="Pathology">Pathology</option>
+          <option value="Radiology">Radiology</option>
+          <option value="Cardiology">Cardiology</option>
+          <option value="Neurology">Neurology</option>
+          <option value="Ophthalmology">Ophthalmology</option>
+          <option value="ENT">ENT</option>
+          <option value="Pulmonology">Pulmonology</option>
+        </select>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Select</th>
+            <th>Test Name</th>
+            <th>Category</th>
+            <th>Price (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="testTableBody"></tbody>
+      </table>
+
+      <div class="summary">
+        <div>
+          <div style="font-size:13px;color:#555;">Total Amount</div>
+          <div class="total-amount" id="totalPrice">₹0</div>
+          <div class="selected-names" id="selectedNames">No tests selected</div>
+        </div>
+        <div style="font-size:13px;color:#1a73e8;font-weight:600;" id="countBadge">0 selected</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="backToBills()">← Back</button>
+        <button class="btn btn-continue" id="continueBtn" onclick="goNext()" disabled>Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allTests = [];
+    let selected = {};
+
+    // Tests fetch karo server se
+    async function loadTests() {
+      try {
+        const res = await fetch('http://localhost:3000/api/tests');
+        const data = await res.json();
+        allTests = data.tests;
+        renderTable(allTests);
+      } catch (err) {
+        document.getElementById('testTableBody').innerHTML = 
+          '<tr><td colspan="4" style="text-align:center;color:red;padding:20px;">Server se connect nahi ho pa raha!</td></tr>';
+      }
+    }
+
+    function renderTable(list) {
+      const tbody = document.getElementById('testTableBody');
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#aaa;">No tests found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(t => `
+        <tr>
+          <td><input type="checkbox" id="chk_${t.id}" ${selected[t.id] ? 'checked' : ''} onchange="toggleTest(${t.id}, ${t.price}, '${t.name}')"/></td>
+          <td>${t.name}</td>
+          <td><span class="category">${t.category}</span></td>
+          <td class="price">₹${t.price}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filterTests() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const cat = document.getElementById('categoryFilter').value;
+      const filtered = allTests.filter(t =>
+        t.name.toLowerCase().includes(q) && (cat === '' || t.category === cat)
+      );
+      renderTable(filtered);
+    }
+
+    function toggleTest(id, price, name) {
+      if (selected[id]) delete selected[id];
+      else selected[id] = { price, name };
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const keys = Object.keys(selected);
+      const total = keys.reduce((sum, k) => sum + selected[k].price, 0);
+      document.getElementById('totalPrice').textContent = '₹' + total;
+      document.getElementById('countBadge').textContent = keys.length + ' selected';
+      document.getElementById('selectedNames').textContent = keys.length ? keys.map(k => selected[k].name).join(', ') : 'No tests selected';
+      document.getElementById('continueBtn').disabled = keys.length === 0;
+    }
+
+    function goNext() {
+      const keys = Object.keys(selected);
+      if (keys.length === 0) return;
+      const selectedTests = keys.map(k => ({ id: k, name: selected[k].name, price: selected[k].price }));
+      localStorage.setItem('selectedTests', JSON.stringify(selectedTests));
+      localStorage.setItem('totalAmount', keys.reduce((sum, k) => sum + selected[k].price, 0));
+
+      const isReturning = localStorage.getItem('isReturningPatient');
+      if (isReturning === 'true') {
+        window.location.href = 'payment.html';
+      } else {
+        window.location.href = 'patient-details.html';
+      }
+    }
+    function backToBills() {
+      const isReturning = localStorage.getItem('isReturningPatient');
+      if (isReturning === 'true') {
+        window.location.href = 'my-bills.html';
+      } else {
+        window.location.href = '../index.html';
+      }
+    }
+    function logout() {
+      localStorage.clear();
+      window.location.href = '../index.html';
+    }
+
+    loadTests();
+  </script>
+</body>
+</html>

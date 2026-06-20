@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Successful</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px 32px;
+      max-width: 480px;
+      width: 100%;
+      margin: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .success-icon { font-size: 72px; margin-bottom: 16px; }
+
+    h1 { font-size: 24px; color: #2e7d32; margin-bottom: 8px; }
+    .subtitle { font-size: 14px; color: #888; margin-bottom: 24px; }
+
+    /* Bill Details */
+    .bill-box {
+      background: #f0f4f8;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .bill-box h3 { font-size: 14px; color: #1a73e8; margin-bottom: 12px; }
+
+    .bill-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #555;
+      padding: 6px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .bill-row:last-child { border-bottom: none; }
+    .bill-row span:last-child { font-weight: 600; color: #333; }
+
+    .bill-no {
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+
+    /* Tests List */
+    .tests-box {
+      background: #f0f4f8;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .tests-box h3 { font-size: 14px; color: #1a73e8; margin-bottom: 10px; }
+    .test-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #555;
+      padding: 5px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .test-item:last-child { border-bottom: none; }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 15px;
+      font-weight: 700;
+      color: #2e7d32;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 2px solid #2e7d32;
+    }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 12px; }
+    .btn {
+      flex: 1;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-download { background: #1a73e8; color: white; }
+    .btn-done { background: #2e7d32; color: white; }
+    .btn:hover { opacity: 0.88; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="success-icon">✅</div>
+    <h1>Payment Successful!</h1>
+    <p class="subtitle">Bill successfully generate ho gaya hai</p>
+
+    <!-- Bill Number -->
+    <div class="bill-no" id="billNo">Loading...</div>
+
+    <!-- Patient Details -->
+    <div class="bill-box">
+      <h3>👤 Patient Details</h3>
+      <div class="bill-row"><span>Name</span><span id="patientName">-</span></div>
+      <div class="bill-row"><span>Age</span><span id="patientAge">-</span></div>
+      <div class="bill-row"><span>Gender</span><span id="patientGender">-</span></div>
+      <div class="bill-row"><span>Mobile</span><span id="patientMobile">-</span></div>
+      <div class="bill-row"><span>Govt ID</span><span id="patientGovtId">-</span></div>
+      <div class="bill-row"><span>Payment Mode</span><span id="paymentMode">-</span></div>
+    </div>
+
+    <!-- Selected Tests -->
+    <div class="tests-box">
+      <h3>🔬 Tests</h3>
+      <div id="testsList"></div>
+      <div class="total-row">
+        <span>Total Paid</span>
+        <span id="totalPaid">₹0</span>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-row">
+      <button class="btn btn-download" onclick="downloadBill()">⬇ Download</button>
+      <button class="btn btn-done" onclick="done()">Done ✓</button>
+    </div>
+  </div>
+
+  <script>
+    function loadDetails() {
+      const billNo = localStorage.getItem('billNo') || 'N/A';
+      const patient = JSON.parse(localStorage.getItem('patientDetails') || '{}');
+      const tests = JSON.parse(localStorage.getItem('selectedTests') || '[]');
+      const total = localStorage.getItem('totalAmount') || 0;
+
+      document.getElementById('billNo').textContent = '🧾 ' + billNo;
+      document.getElementById('patientName').textContent = patient.name || '-';
+      document.getElementById('patientAge').textContent = patient.age || '-';
+      document.getElementById('patientGender').textContent = patient.gender || '-';
+      document.getElementById('patientMobile').textContent = patient.mobile || '-';
+      document.getElementById('patientGovtId').textContent = patient.govt_id || '-';
+      document.getElementById('paymentMode').textContent = localStorage.getItem('paymentMode') || '-';
+      document.getElementById('totalPaid').textContent = '₹' + total;
+
+      document.getElementById('testsList').innerHTML = tests.map(t => `
+        <div class="test-item">
+          <span>${t.name}</span>
+          <span>₹${t.price}</span>
+        </div>
+      `).join('');
+    }
+
+   function downloadBill() {
+  const billNo = localStorage.getItem('billNo');
+  window.open(`http://localhost:3000/api/bill/pdf/${billNo}`, '_blank');
+}
+
+ function done() {
+  const isReturning = localStorage.getItem('isReturningPatient');
+  const role = localStorage.getItem('role');
+
+  localStorage.removeItem('selectedTests');
+  localStorage.removeItem('totalAmount');
+  localStorage.removeItem('billNo');
+  localStorage.removeItem('paymentMode');
+  localStorage.removeItem('isReturningPatient');
+
+  if (role === 'admin') {
+    localStorage.removeItem('patientDetails');
+    window.location.href = 'http://localhost:3000/admin/dashboard.html';
+  } else if (isReturning === 'true') {
+    window.location.href = 'http://localhost:3000/patient/my-bills.html';
+  } else {
+    localStorage.removeItem('patientDetails');
+    window.location.href = 'http://localhost:3000';
+  }
+}
+    loadDetails();
+  </script>
+</body>
+</html>

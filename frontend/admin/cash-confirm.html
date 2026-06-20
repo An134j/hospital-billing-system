@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cash Payment Desk</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
+
+    .header {
+      background: #1a73e8;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 { font-size: 18px; }
+    .back-btn { cursor: pointer; font-size: 13px; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 6px; }
+
+    .container { max-width: 600px; margin: 24px auto; padding: 0 16px; }
+
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    .card h2 { font-size: 16px; color: #1a73e8; margin-bottom: 16px; }
+
+    .search-row { display: flex; gap: 10px; }
+    .search-box {
+      flex: 1;
+      padding: 12px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-box:focus { border-color: #1a73e8; }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #1a73e8;
+      color: white;
+    }
+    .btn:hover { opacity: 0.88; }
+
+    .error { background: #fdecea; color: #c62828; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 12px; display: none; }
+
+    /* Bill Details Card */
+    .bill-details { display: none; }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
+    }
+    .info-row span:first-child { color: #888; }
+    .info-row span:last-child { color: #333; font-weight: 600; }
+
+    .test-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #555;
+      padding: 5px 0;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 18px;
+      font-weight: 700;
+      color: #2e7d32;
+      padding-top: 12px;
+      margin-top: 8px;
+      border-top: 2px solid #2e7d32;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .status-pending { background: #fff3e0; color: #e65100; }
+    .status-paid { background: #e8f5e9; color: #2e7d32; }
+
+    .confirm-btn {
+      width: 100%;
+      padding: 14px;
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .confirm-btn:hover { opacity: 0.88; }
+    .confirm-btn:disabled { background: #ccc; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>💰 Cash Payment Desk</h1>
+    <span class="back-btn" onclick="window.location.href='dashboard.html'">← Dashboard</span>
+  </div>
+
+  <div class="container">
+
+    <div class="card">
+      <h2>🔍 Bill Number Search Karo</h2>
+      <div class="search-row">
+        <input type="text" class="search-box" id="billNoInput" placeholder="Jaise: BILL1718900000000" />
+        <button class="btn" onclick="searchBill()">Search</button>
+      </div>
+      <div class="error" id="errorMsg"></div>
+    </div>
+
+    <div class="card bill-details" id="billDetails">
+      <h2>🧾 Bill Details</h2>
+
+      <div class="info-row"><span>Bill No</span><span id="dBillNo">-</span></div>
+      <div class="info-row"><span>Patient Name</span><span id="dPatientName">-</span></div>
+      <div class="info-row"><span>Mobile</span><span id="dMobile">-</span></div>
+      <div class="info-row"><span>Govt ID</span><span id="dGovtId">-</span></div>
+
+      <div style="margin-top:16px;">
+        <h3 style="font-size:14px;color:#1a73e8;margin-bottom:8px;">Tests</h3>
+        <div id="dTestsList"></div>
+        <div class="total-row">
+          <span>Total Amount</span>
+          <span id="dTotal">₹0</span>
+        </div>
+      </div>
+
+      <div id="dStatusBadge"></div>
+
+      <button class="confirm-btn" id="confirmBtn" onclick="confirmCash()">✅ Cash Received - Confirm Payment</button>
+      <button class="confirm-btn" id="downloadBtn" style="background:#1a73e8; display:none;" onclick="downloadSlip()">⬇ Download Bill Slip</button>
+    </div>
+
+  </div>
+
+  <script>
+    let currentBillNo = '';
+
+    document.getElementById('billNoInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') searchBill();
+    });
+
+    async function searchBill() {
+      const billNo = document.getElementById('billNoInput').value.trim();
+      const errorDiv = document.getElementById('errorMsg');
+      errorDiv.style.display = 'none';
+      document.getElementById('billDetails').style.display = 'none';
+
+      if (!billNo) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Bill number daalein!';
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/admin/bill/search/${billNo}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = data.message;
+          return;
+        }
+
+        currentBillNo = data.bill.bill_no;
+        document.getElementById('dBillNo').textContent = data.bill.bill_no;
+        document.getElementById('dPatientName').textContent = data.patient ? data.patient.name : 'N/A';
+        document.getElementById('dMobile').textContent = data.patient ? data.patient.mobile : 'N/A';
+        document.getElementById('dGovtId').textContent = data.patient ? data.patient.govt_id : 'N/A';
+        document.getElementById('dTotal').textContent = '₹' + data.bill.total_amount;
+
+        document.getElementById('dTestsList').innerHTML = data.tests.map(t => `
+          <div class="test-item"><span>${t.test_name}</span><span>₹${t.price}</span></div>
+        `).join('');
+
+        const statusBadge = document.getElementById('dStatusBadge');
+        const confirmBtn = document.getElementById('confirmBtn');
+
+       if (data.bill.payment_status === 'paid') {
+          statusBadge.innerHTML = '<span class="status-badge status-paid">✅ Already Paid</span>';
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = '✅ Already Confirmed';
+          document.getElementById('downloadBtn').style.display = 'block';
+        } else if (data.bill.payment_mode !== 'Cash') {
+          statusBadge.innerHTML = `<span class="status-badge status-paid">Payment Mode: ${data.bill.payment_mode}</span>`;
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = 'Ye Cash Bill Nahi Hai';
+       } else {
+          statusBadge.innerHTML = '<span class="status-badge status-pending">⏳ Pending - Cash Awaited</span>';
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = '✅ Cash Received - Confirm Payment';
+          document.getElementById('downloadBtn').style.display = 'none';
+        }
+
+        document.getElementById('billDetails').style.display = 'block';
+
+      } catch (err) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Server se connect nahi ho pa raha!';
+      }
+    }
+function downloadSlip() {
+      window.open(`http://localhost:3000/api/bill/pdf/${currentBillNo}`, '_blank');
+    }
+    async function confirmCash() {
+      if (!confirm('Confirm karein ki cash receive ho gaya hai?')) return;
+
+      const token = localStorage.getItem('token');
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/admin/bill/confirm-cash/${currentBillNo}`, {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+
+      if (data.success) {
+          alert('Payment confirm ho gaya!');
+          searchBill();
+          document.getElementById('downloadBtn').style.display = 'block';
+        } else {
+          alert(data.message);
+        }
+      } catch (err) {
+        alert('Server se connect nahi ho pa raha!');
+      }
+    }
+  </script>
+</body>
+</html>

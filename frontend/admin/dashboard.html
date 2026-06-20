@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
+
+    .header {
+      background: #1a73e8;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 { font-size: 18px; }
+    .logout { cursor: pointer; font-size: 13px; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 6px; }
+
+    .container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+
+    .welcome { font-size: 20px; font-weight: 700; color: #333; margin-bottom: 20px; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .stat-card span { font-size: 36px; }
+    .stat-card h3 { font-size: 28px; font-weight: 700; color: #1a73e8; margin: 8px 0 4px; }
+    .stat-card p { font-size: 13px; color: #888; }
+
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .card-header h2 { font-size: 16px; color: #1a73e8; }
+    .view-all { font-size: 13px; color: #1a73e8; cursor: pointer; text-decoration: underline; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #e8f0fe; }
+    thead th { padding: 10px 14px; text-align: left; font-size: 13px; color: #1a73e8; }
+    tbody tr { border-bottom: 1px solid #f0f0f0; }
+    tbody tr:hover { background: #fafafa; }
+    tbody td { padding: 10px 14px; font-size: 13px; color: #333; }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-paid { background: #e8f5e9; color: #2e7d32; }
+    .badge-pending { background: #fff3e0; color: #e65100; }
+
+    .actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+    .action-btn {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    .action-btn:hover { border-color: #1a73e8; }
+    .action-btn span { font-size: 32px; }
+    .action-btn h3 { font-size: 15px; color: #333; margin-top: 8px; }
+    .action-btn p { font-size: 12px; color: #888; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🏥 Admin Dashboard</h1>
+    <span class="logout" onclick="logout()">Logout</span>
+  </div>
+
+  <div class="container">
+
+    <div class="welcome" id="welcomeMsg">Welcome, Admin! 👋</div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <span>🧾</span>
+        <h3 id="totalBills">0</h3>
+        <p>Total Bills</p>
+      </div>
+      <div class="stat-card">
+        <span>👥</span>
+        <h3 id="totalPatients">0</h3>
+        <p>Total Patients</p>
+      </div>
+      <div class="stat-card">
+        <span>💰</span>
+        <h3 id="totalRevenue">₹0</h3>
+        <p>Total Revenue</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="action-btn" onclick="window.location.href='../patient/select-tests.html'">
+        <span>➕</span>
+        <h3>New Bill</h3>
+        <p>Naya patient bill banao</p>
+      </div>
+      <div class="action-btn" onclick="window.location.href='reports.html'">
+        <span>📊</span>
+        <h3>All Reports</h3>
+        <p>Saare bills dekho</p>
+      </div>
+      <div class="action-btn" onclick="window.location.href='cash-confirm.html'">
+        <span>💰</span>
+        <h3>Cash Payment Desk</h3>
+        <p>Cash payment confirm karo</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>🧾 Recent Bills</h2>
+        <span class="view-all" onclick="window.location.href='reports.html'">View All</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Bill No</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Payment</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="recentBills">
+          <tr><td colspan="5" style="text-align:center;padding:20px;color:#aaa;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    async function loadDashboard() {
+      const name = localStorage.getItem('name') || 'Admin';
+      document.getElementById('welcomeMsg').textContent = 'Welcome, ' + name + '! 👋';
+
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:3000/api/admin/bills?status=paid', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        const bills = data.bills || [];
+
+        const totalRevenue = bills.reduce((sum, b) => sum + Number(b.total_amount), 0);
+        document.getElementById('totalBills').textContent = bills.length;
+        document.getElementById('totalRevenue').textContent = '₹' + totalRevenue;
+
+        const pRes = await fetch('http://localhost:3000/api/admin/patients', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const pData = await pRes.json();
+        const uniqueGovtIds = new Set((pData.patients || []).map(p => p.govt_id));
+        document.getElementById('totalPatients').textContent = uniqueGovtIds.size;
+
+        const recent = bills.slice(-5).reverse();
+        if (recent.length === 0) {
+          document.getElementById('recentBills').innerHTML =
+            '<tr><td colspan="5" style="text-align:center;padding:20px;color:#aaa;">Koi bill nahi hai abhi</td></tr>';
+          return;
+        }
+
+        document.getElementById('recentBills').innerHTML = recent.map(b => `
+          <tr>
+            <td>${b.bill_no}</td>
+            <td>${new Date(b.created_at).toLocaleDateString('en-IN')}</td>
+            <td>₹${b.total_amount}</td>
+            <td>${b.payment_mode}</td>
+            <td><span class="badge badge-${b.payment_status}">${b.payment_status}</span></td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        document.getElementById('recentBills').innerHTML =
+          '<tr><td colspan="5" style="text-align:center;padding:20px;color:red;">Server se connect nahi ho pa raha!</td></tr>';
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '../index.html';
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>

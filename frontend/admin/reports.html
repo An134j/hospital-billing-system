@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>All Reports</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
+    .header { background: #1a73e8; color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { font-size: 18px; }
+    .back-btn { cursor: pointer; font-size: 13px; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 6px; }
+    .container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .search-box { flex: 1; padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; min-width: 200px; }
+    .search-box:focus { border-color: #1a73e8; }
+    select { padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat { background: #e8f0fe; border-radius: 10px; padding: 14px; text-align: center; }
+    .stat h3 { font-size: 22px; font-weight: 700; color: #1a73e8; }
+    .stat p { font-size: 12px; color: #666; margin-top: 2px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #e8f0fe; }
+    thead th { padding: 12px 14px; text-align: left; font-size: 13px; color: #1a73e8; }
+    tbody tr { border-bottom: 1px solid #f0f0f0; }
+    tbody tr:hover { background: #fafafa; }
+    tbody td { padding: 12px 14px; font-size: 13px; color: #333; }
+    .badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-paid { background: #e8f5e9; color: #2e7d32; }
+    .badge-pending { background: #fff3e0; color: #e65100; }
+    .empty { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+    .delete-btn { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    .delete-btn:hover { background: #c62828; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>📊 All Reports</h1>
+    <span class="back-btn" onclick="window.location.href='http://localhost:3000/admin/dashboard.html'">← Dashboard</span>
+  </div>
+
+  <div class="container">
+
+    <div class="stats-row">
+      <div class="stat">
+        <h3 id="totalBills">0</h3>
+        <p>Total Bills</p>
+      </div>
+      <div class="stat">
+        <h3 id="totalRevenue">₹0</h3>
+        <p>Total Revenue</p>
+      </div>
+      <div class="stat">
+        <h3 id="todayBills">0</h3>
+        <p>Today's Bills</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="filter-bar">
+        <input type="text" class="search-box" placeholder="🔍 Bill number ya amount search..." oninput="filterBills()" id="searchInput"/>
+        <select onchange="filterBills()" id="paymentFilter">
+          <option value="">All Payment Modes</option>
+          <option value="UPI">UPI</option>
+          <option value="Cash">Cash</option>
+          <option value="Bank">Bank</option>
+          <option value="Card">Card</option>
+        </select>
+        <select onchange="switchStatusTab()" id="statusFilter">
+          <option value="paid">✅ Active Bills</option>
+          <option value="cancelled">❌ Cancelled Bills</option>
+        </select>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Bill No</th>
+            <th>Date & Time</th>
+            <th>Amount</th>
+            <th>Payment Mode</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="billsTable">
+          <tr><td colspan="7" class="empty">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let allBills = [];
+
+   function switchStatusTab() {
+  loadBills();
+}
+    async function loadBills() {
+      try {
+        const token = localStorage.getItem('token');
+        const status = document.getElementById('statusFilter').value;
+        const res = await fetch(`http://localhost:3000/api/admin/bills?status=${status}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        allBills = (data.bills || []).reverse();
+        const total = allBills.reduce((sum, b) => sum + Number(b.total_amount), 0);
+        document.getElementById('totalBills').textContent = allBills.length;
+        document.getElementById('totalRevenue').textContent = '₹' + total;
+
+        const today = new Date().toDateString();
+        const todayCount = allBills.filter(b => new Date(b.created_at).toDateString() === today).length;
+        document.getElementById('todayBills').textContent = todayCount;
+
+        renderTable(allBills);
+
+      } catch (err) {
+        document.getElementById('billsTable').innerHTML =
+          '<tr><td colspan="7" class="empty" style="color:red;">Server se connect nahi ho pa raha!</td></tr>';
+      }
+    }
+
+    function renderTable(bills) {
+      if (bills.length === 0) {
+        document.getElementById('billsTable').innerHTML =
+          '<tr><td colspan="7" class="empty">Koi bill nahi mila</td></tr>';
+        return;
+      }
+
+      document.getElementById('billsTable').innerHTML = bills.map((b, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td><strong>${b.bill_no}</strong></td>
+          <td>${new Date(b.created_at).toLocaleString('en-IN')}</td>
+          <td><strong>₹${b.total_amount}</strong></td>
+          <td>${b.payment_mode}</td>
+          <td><span class="badge badge-${b.payment_status}">${b.payment_status}</span></td>
+          <td>${b.payment_status === 'paid' ? `<button class="delete-btn" onclick="deleteBill('${b.bill_no}')">❌ Cancel</button>` : '<span style="color:#888;">Cancelled</span>'}</td>
+        </tr>
+      `).join('');
+    }
+
+   async function deleteBill(billNo) {
+  const reason = prompt('Bill cancel karne ka reason likho:');
+  if (!reason) return;
+
+  const token = localStorage.getItem('token');
+  const res = await fetch(`http://localhost:3000/api/admin/bill/cancel/${billNo}`, {
+    method: 'PUT',
+    headers: { 
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    alert('Bill cancel ho gaya!');
+    loadBills();
+  } else {
+    alert('Cancel nahi hua!');
+  }
+}
+    function filterBills() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const mode = document.getElementById('paymentFilter').value;
+      const filtered = allBills.filter(b =>
+        (b.bill_no.toLowerCase().includes(q) || String(b.total_amount).includes(q)) &&
+        (mode === '' || b.payment_mode === mode)
+      );
+      renderTable(filtered);
+    }
+
+    loadBills();
+  </script>
+</body>
+</html>

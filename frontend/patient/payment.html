@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
+
+    .header {
+      background: #1a73e8;
+      color: white;
+      padding: 16px 24px;
+    }
+    .header h1 { font-size: 18px; }
+
+    .container { max-width: 550px; margin: 24px auto; padding: 0 16px; }
+
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
+
+    .card h2 { font-size: 16px; color: #1a73e8; margin-bottom: 16px; }
+
+    /* Total Amount */
+    .amount-box {
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .amount-box p { font-size: 13px; opacity: 0.8; }
+    .amount-box h2 { font-size: 36px; font-weight: 700; margin-top: 4px; }
+
+    /* Payment Options */
+    .payment-option {
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s;
+    }
+    .payment-option:hover { border-color: #1a73e8; background: #f8fbff; }
+    .payment-option.selected { border-color: #1a73e8; background: #e8f0fe; }
+    .payment-option span { font-size: 28px; }
+    .payment-option h3 { font-size: 15px; color: #333; }
+    .payment-option p { font-size: 12px; color: #888; }
+
+    /* QR Code Box */
+    .qr-box {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background: #f8fbff;
+      border-radius: 10px;
+      margin-top: 16px;
+    }
+    .qr-box.show { display: block; }
+    .qr-code {
+      width: 150px;
+      height: 150px;
+      background: #ddd;
+      margin: 0 auto 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .error { background: #fdecea; color: #c62828; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+
+    .btn-row { display: flex; gap: 12px; margin-top: 20px; }
+    .btn { flex: 1; padding: 13px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-back { background: #f0f0f0; color: #555; }
+    .btn-pay { background: #2e7d32; color: white; }
+    .btn-pay:disabled { background: #a5d6a7; cursor: not-allowed; }
+
+    .loading { display: none; text-align: center; padding: 10px; color: #1a73e8; font-size: 14px; }
+  </style>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🏥 Payment</h1>
+  </div>
+
+  <div class="container">
+
+    <!-- Total Amount -->
+    <div class="amount-box">
+      <p>Total Payable Amount</p>
+      <h2 id="totalAmount">₹0</h2>
+    </div>
+
+    <div class="card">
+      <h2>💳 Select Payment Mode</h2>
+
+      <div class="error" id="errorMsg"></div>
+
+      <!-- UPI -->
+      <div class="payment-option" id="opt_upi" onclick="selectPayment('UPI')">
+        <span>📱</span>
+        <div>
+          <h3>UPI / QR Code</h3>
+          <p>Google Pay, PhonePe, Paytm</p>
+        </div>
+      </div>
+
+      <!-- Cash -->
+      <div class="payment-option" id="opt_cash" onclick="selectPayment('Cash')">
+        <span>💵</span>
+        <div>
+          <h3>Cash</h3>
+          <p>Pay at counter</p>
+        </div>
+      </div>
+
+      <!-- Bank -->
+      <div class="payment-option" id="opt_bank" onclick="selectPayment('Bank')">
+        <span>🏦</span>
+        <div>
+          <h3>Bank Transfer</h3>
+          <p>NEFT / RTGS / IMPS</p>
+        </div>
+      </div>
+
+      <!-- Card -->
+      <div class="payment-option" id="opt_card" onclick="selectPayment('Card')">
+        <span>💳</span>
+        <div>
+          <h3>Debit / Credit Card</h3>
+          <p>Visa, Mastercard, RuPay</p>
+        </div>
+      </div>
+
+      <!-- QR Box (UPI select karne pe dikhega) -->
+      <div class="qr-box" id="qrBox">
+        <div class="qr-code">QR Code Here</div>
+        <p style="font-size:13px;color:#555;">Scan karo aur payment karo</p>
+        <p style="font-size:12px;color:#1a73e8;margin-top:4px;">UPI ID: hospital@upi</p>
+      </div>
+
+      <div class="loading" id="loading">⏳ Processing payment...</div>
+<div class="btn-row">
+       <button class="btn btn-back" onclick="goBackFromPayment()">← Back</button>
+        <button class="btn btn-pay" id="payBtn" onclick="processPayment()" disabled>Pay Now</button>
+      </div>
+      <button class="btn" style="width:100%;margin-top:10px;background:#e53935;color:white;" onclick="cancelBilling()">✕ Cancel Billing</button>
+    </div>
+  </div>
+
+  <script>
+    let selectedPayment = '';
+
+    // Total amount dikhao
+    document.getElementById('totalAmount').textContent = '₹' + (localStorage.getItem('totalAmount') || 0);
+
+    function selectPayment(mode) {
+      // Pehle sab deselect karo
+      document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+      document.getElementById('qrBox').classList.remove('show');
+
+      // Selected option highlight karo
+      document.getElementById('opt_' + mode.toLowerCase()).classList.add('selected');
+      selectedPayment = mode;
+
+      // UPI ke liye QR dikhao
+      if (mode === 'UPI') {
+        document.getElementById('qrBox').classList.add('show');
+      }
+
+      document.getElementById('payBtn').disabled = false;
+    }
+
+    async function processPayment() {
+  if (!selectedPayment) return;
+  const patientDetailsCheck = JSON.parse(localStorage.getItem('patientDetails') || '{}');
+  if (!patientDetailsCheck.name || !patientDetailsCheck.mobile) {
+    alert('Patient details nahi mile! Wapas jaake details bharein.');
+    window.location.href = 'patient-details.html';
+    return;
+  }
+
+  const errorDiv = document.getElementById('errorMsg');
+  errorDiv.style.display = 'none';
+
+  const patientDetails = JSON.parse(localStorage.getItem('patientDetails') || '{}');
+  const selectedTests = JSON.parse(localStorage.getItem('selectedTests') || '[]');
+  const totalAmount = localStorage.getItem('totalAmount') || 0;
+
+  // Cash ya Bank ke liye seedha bill bana do
+  if (selectedPayment === 'Cash' || selectedPayment === 'Bank') {
+    await createBillDirectly(patientDetails, selectedTests, totalAmount, selectedPayment);
+    return;
+  }
+
+  // UPI/Card ke liye Razorpay kholo
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('payBtn').disabled = true;
+
+  try {
+    const orderRes = await fetch('http://localhost:3000/api/payment/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: totalAmount })
+    });
+
+    const orderData = await orderRes.json();
+
+    if (!orderData.success) {
+      errorDiv.style.display = 'block';
+      errorDiv.textContent = 'Payment order banane mein error!';
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('payBtn').disabled = false;
+      return;
+    }
+
+    const options = {
+      key: orderData.key,
+      amount: orderData.amount,
+      currency: 'INR',
+      name: 'Hospital Test & Billing System',
+      description: 'Test Payment',
+      order_id: orderData.orderId,
+      handler: async function(response) {
+        await createBillDirectly(patientDetails, selectedTests, totalAmount, selectedPayment);
+      },
+      prefill: {
+        name: patientDetails.name,
+        contact: patientDetails.mobile
+      },
+      theme: { color: '#1a73e8' },
+      modal: {
+        ondismiss: function() {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('payBtn').disabled = false;
+        }
+      }
+    };
+
+    document.getElementById('loading').style.display = 'none';
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    errorDiv.style.display = 'block';
+    errorDiv.textContent = 'Server se connect nahi ho pa raha!';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('payBtn').disabled = false;
+  }
+}
+
+async function createBillDirectly(patientDetails, selectedTests, totalAmount, paymentMode) {
+  try {
+    const res = await fetch('http://localhost:3000/api/bill/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        patientDetails,
+        selectedTests,
+        totalAmount: Number(totalAmount),
+        paymentMode
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      localStorage.setItem('billNo', data.billNo);
+      window.location.href = 'success.html';
+    } else {
+      alert('Bill create nahi hua!');
+    }
+  } catch (err) {
+    alert('Server se connect nahi ho pa raha!');
+  }
+}
+function goBackFromPayment() {
+  const isReturning = localStorage.getItem('isReturningPatient');
+  if (isReturning === 'true') {
+    window.location.href = 'select-tests.html';
+  } else {
+    window.location.href = 'patient-details.html';
+  }
+}
+   function cancelBilling() {
+  if (!confirm('Kya aap billing cancel karna chahte hain?')) return;
+
+  const isReturning = localStorage.getItem('isReturningPatient');
+  const role = localStorage.getItem('role');
+
+  localStorage.removeItem('selectedTests');
+  localStorage.removeItem('totalAmount');
+
+  if (isReturning === 'true') {
+    window.location.href = 'my-bills.html';
+  } else if (role === 'admin') {
+    localStorage.removeItem('patientDetails');
+    window.location.href = 'http://localhost:3000/admin/dashboard.html';
+  } else {
+    localStorage.removeItem('patientDetails');
+    window.location.href = 'http://localhost:3000';
+  }
+}
+  </script>
+</body>
+</html>

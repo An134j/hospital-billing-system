@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Bills</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
+
+    .header {
+      background: #1a73e8;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 { font-size: 18px; }
+    .logout { cursor: pointer; font-size: 13px; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 6px; }
+
+    .container { max-width: 700px; margin: 24px auto; padding: 0 16px; }
+
+    .welcome-card {
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: white;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    .welcome-card h2 { font-size: 20px; }
+    .welcome-card p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    .card h2 { font-size: 16px; color: #1a73e8; margin-bottom: 16px; }
+
+    .bill-card {
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .bill-card:hover { border-color: #1a73e8; background: #f8fbff; }
+
+    .bill-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .bill-no { font-size: 15px; font-weight: 700; color: #1a73e8; }
+    .bill-date { font-size: 12px; color: #888; }
+
+    .bill-tests { font-size: 13px; color: #555; margin-bottom: 10px; }
+
+    .bill-footer { display: flex; justify-content: space-between; align-items: center; }
+    .bill-amount { font-size: 18px; font-weight: 700; color: #2e7d32; }
+    .bill-mode { font-size: 12px; color: #888; background: #f0f0f0; padding: 3px 8px; border-radius: 20px; }
+
+    .badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-paid { background: #e8f5e9; color: #2e7d32; }
+
+    .download-btn {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .download-btn:hover { opacity: 0.88; }
+
+    .empty { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🏥 My Bills</h1>
+    <span class="logout" onclick="logout()">Logout</span>
+  </div>
+
+  <div class="container">
+
+    
+<div class="welcome-card">
+      <h2 id="welcomeName">Welcome! 👋</h2>
+      <p>Yahan aap apne saare bills dekh sakte hain</p>
+      <button onclick="newBooking()" style="margin-top:14px; background:white; color:#1a73e8; border:none; padding:10px 18px; border-radius:8px; font-weight:600; cursor:pointer; font-size:14px;">➕ New Test Booking</button>
+    </div>
+    <div class="card">
+      <h2>🧾 Mere Bills</h2>
+      <div id="billsList">
+        <div class="empty">Loading...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    async function loadMyBills() {
+      const name = localStorage.getItem('name');
+      const patientId = localStorage.getItem('patientId');
+      document.getElementById('welcomeName').textContent = 'Welcome, ' + name + '! 👋';
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/patient/bills/${patientId}`);
+        const data = await res.json();
+        const bills = data.bills || [];
+
+        if (bills.length === 0) {
+          document.getElementById('billsList').innerHTML =
+            '<div class="empty">Koi bill nahi mila!</div>';
+          return;
+        }
+
+        document.getElementById('billsList').innerHTML = bills.map(b => `
+          <div class="bill-card">
+            <div class="bill-header">
+              <span class="bill-no">🧾 ${b.bill_no}</span>
+              <span class="bill-date">${new Date(b.created_at).toLocaleString('en-IN')}</span>
+            </div>
+            <div class="bill-tests">${b.tests ? b.tests.map(t => t.test_name).join(', ') : ''}</div>
+            <div class="bill-footer">
+              <span class="bill-amount">₹${b.total_amount}</span>
+              <span class="bill-mode">${b.payment_mode}</span>
+              <span class="badge badge-paid">${b.payment_status}</span>
+              <button class="download-btn" onclick="downloadBill('${b.bill_no}')">⬇ Download</button>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        document.getElementById('billsList').innerHTML =
+          '<div class="empty" style="color:red;">Server se connect nahi ho pa raha!</div>';
+      }
+    }
+
+    function downloadBill(billNo) {
+      window.open(`http://localhost:3000/api/bill/pdf/${billNo}`, '_blank');
+    }
+function newBooking() {
+      localStorage.setItem('isReturningPatient', 'true');
+      window.location.href = 'select-tests.html';
+    }
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'http://localhost:3000';
+    }
+
+    loadMyBills();
+  </script>
+</body>
+</html>

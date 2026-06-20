@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hospital Billing System - Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      color: white;
+    }
+    .header span { font-size: 60px; }
+    .header h1 { font-size: 26px; font-weight: 700; margin-top: 10px; }
+    .header p { font-size: 14px; opacity: 0.8; margin-top: 4px; }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 24px;
+      background: #f0f4f8;
+      border-radius: 10px;
+      padding: 4px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: #888;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: #1a73e8;
+      color: white;
+    }
+
+    .form { display: none; }
+    .form.active { display: block; }
+
+    .form h2 { font-size: 18px; color: #333; margin-bottom: 4px; }
+    .form p { font-size: 13px; color: #888; margin-bottom: 20px; }
+
+    .input-group { margin-bottom: 16px; }
+
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .input-group input:focus { border-color: #1a73e8; }
+
+    .error {
+      background: #fdecea;
+      color: #c62828;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.88; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <span>🏥</span>
+    <h1>Hospital Billing System</h1>
+    <p>Welcome! Please login to continue</p>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('admin')">👨‍💼 Admin Login</div>
+      <div class="tab" onclick="switchTab('patient')">🧑‍⚕️ Patient Login</div>
+    </div>
+
+    <!-- Admin Form -->
+    <div class="form active" id="adminForm">
+      <h2>Admin Login</h2>
+      <p>Enter your admin credentials</p>
+      <div class="error" id="adminError"></div>
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="adminUsername" placeholder="Enter username"/>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="adminPassword" placeholder="Enter password"/>
+      </div>
+      <button class="btn" onclick="adminLogin()">Login as Admin</button>
+    </div>
+
+    <!-- Patient Form -->
+    <div class="form" id="patientForm">
+      <h2>Patient Login</h2>
+      <p>Enter your registered mobile number</p>
+      <div class="error" id="patientError"></div>
+      <div class="input-group">
+        <label>Mobile Number</label>
+        <input type="text" id="patientMobile" placeholder="Enter mobile number"/>
+      </div>
+      <button class="btn" onclick="patientLogin()">Login as Patient</button>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(role) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+      if (role === 'admin') {
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('adminForm').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('patientForm').classList.add('active');
+      }
+    }
+
+    async function adminLogin() {
+      const username = document.getElementById('adminUsername').value;
+      const password = document.getElementById('adminPassword').value;
+      const errorDiv = document.getElementById('adminError');
+      errorDiv.style.display = 'none';
+
+      if (!username || !password) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Username aur password dono bharein!';
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:3000/api/login/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+      if (data.success) {
+          localStorage.setItem('role', 'admin');
+          localStorage.setItem('name', data.name);
+          localStorage.setItem('token', data.token);
+          window.location.href = 'http://localhost:3000/admin/dashboard.html';
+        } else {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = data.message;
+        }
+      } catch (err) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Server se connect nahi ho pa raha!';
+      }
+    }
+
+    async function patientLogin() {
+      const mobile = document.getElementById('patientMobile').value;
+      const errorDiv = document.getElementById('patientError');
+      errorDiv.style.display = 'none';
+
+      if (!mobile) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Mobile number bharein!';
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:3000/api/login/patient', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mobile })
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('role', 'patient');
+          localStorage.setItem('name', data.name);
+          localStorage.setItem('patientId', data.patientId);
+          localStorage.setItem('patientDetails', JSON.stringify({
+            name: data.name,
+            age: data.age,
+            gender: data.gender,
+            mobile: data.mobile,
+            govt_id: data.govt_id,
+            address: data.address
+          }));
+          window.location.href = 'http://localhost:3000/patient/my-bills.html';
+        } else {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = data.message;
+        }
+      } catch (err) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Server se connect nahi ho pa raha!';
+      }
+    }
+    // Enter key support
+document.getElementById('adminUsername').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') document.getElementById('adminPassword').focus();
+});
+
+document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') adminLogin();
+});
+
+document.getElementById('patientMobile').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') patientLogin();
+});
+  </script>
+</body>
+</html>

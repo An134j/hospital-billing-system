@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Patient Details</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; }
+
+    .header {
+      background: #1a73e8;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 { font-size: 18px; }
+
+    .container { max-width: 650px; margin: 24px auto; padding: 0 16px; }
+
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
+
+    .card h2 { font-size: 16px; color: #1a73e8; margin-bottom: 20px; }
+
+    .input-group { margin-bottom: 16px; }
+    .input-group label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 600; }
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    .input-group input:focus, .input-group select:focus { border-color: #1a73e8; }
+
+    .row { display: flex; gap: 12px; }
+    .row .input-group { flex: 1; }
+
+    /* Selected Tests Summary */
+    .summary-card { background: #e8f0fe; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .summary-card h3 { font-size: 14px; color: #1a73e8; margin-bottom: 10px; }
+    .test-item { display: flex; justify-content: space-between; font-size: 13px; color: #555; padding: 4px 0; border-bottom: 1px solid #c5d8f8; }
+    .total-row { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; color: #1a73e8; margin-top: 10px; }
+
+    .error { background: #fdecea; color: #c62828; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+
+    .btn-row { display: flex; gap: 12px; margin-top: 20px; }
+    .btn { flex: 1; padding: 13px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-back { background: #f0f0f0; color: #555; }
+    .btn-continue { background: #1a73e8; color: white; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🏥 Patient Details</h1>
+  </div>
+
+  <div class="container">
+
+    <!-- Selected Tests Summary -->
+    <div class="summary-card">
+      <h3>Selected Tests</h3>
+      <div id="testsList"></div>
+      <div class="total-row">
+        <span>Total Amount</span>
+        <span id="totalAmount">₹0</span>
+      </div>
+    </div>
+
+    <!-- Patient Form -->
+    <div class="card">
+      <h2>📋 Fill Patient Details</h2>
+
+      <div class="error" id="errorMsg"></div>
+
+      <div class="input-group">
+        <label>Full Name *</label>
+        <input type="text" id="name" placeholder="Patient ka poora naam"/>
+      </div>
+
+      <div class="row">
+        <div class="input-group">
+          <label>Age *</label>
+          <input type="number" id="age" placeholder="Age"/>
+        </div>
+        <div class="input-group">
+          <label>Gender *</label>
+          <select id="gender">
+            <option value="">Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Mobile Number *</label>
+        <input type="text" id="mobile" placeholder="10 digit mobile number"/>
+      </div>
+
+      <div class="input-group">
+        <label>Govt ID Number *</label>
+        <input type="text" id="govt_id" placeholder="Aadhar / PAN / Voter ID"/>
+      </div>
+
+      <div class="input-group">
+        <label>Address</label>
+        <input type="text" id="address" placeholder="Patient ka address"/>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="window.location.href='select-tests.html'">← Back</button>
+        <button class="btn btn-continue" onclick="goNext()">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Enter key support
+document.getElementById('name').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') document.getElementById('age').focus();
+});
+document.getElementById('age').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') document.getElementById('gender').focus();
+});
+document.getElementById('gender').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') document.getElementById('mobile').focus();
+});
+document.getElementById('mobile').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') document.getElementById('govt_id').focus();
+});
+document.getElementById('govt_id').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') document.getElementById('address').focus();
+});
+document.getElementById('address').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') goNext();
+});
+
+loadSummary();
+    // Selected tests dikhao
+    function loadSummary() {
+      const tests = JSON.parse(localStorage.getItem('selectedTests') || '[]');
+      const total = localStorage.getItem('totalAmount') || 0;
+
+      document.getElementById('testsList').innerHTML = tests.map(t => `
+        <div class="test-item">
+          <span>${t.name}</span>
+          <span>₹${t.price}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('totalAmount').textContent = '₹' + total;
+    }
+
+    function goNext() {
+      const name = document.getElementById('name').value.trim();
+      const age = document.getElementById('age').value;
+      const gender = document.getElementById('gender').value;
+      const mobile = document.getElementById('mobile').value.trim();
+      const govt_id = document.getElementById('govt_id').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const errorDiv = document.getElementById('errorMsg');
+
+      errorDiv.style.display = 'none';
+
+      if (!name || !age || !gender || !mobile || !govt_id) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Sabhi required fields bharein!';
+        return;
+      }
+
+      if (mobile.length !== 10) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Mobile number 10 digit ka hona chahiye!';
+        return;
+      }
+
+      // Patient details save karo
+      localStorage.setItem('patientDetails', JSON.stringify({
+        name, age, gender, mobile, govt_id, address
+      }));
+
+      window.location.href = 'payment.html';
+    }
+
+    loadSummary();
+  </script>
+</body>
+</html>

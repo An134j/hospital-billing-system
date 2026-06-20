@@ -1,0 +1,531 @@
+{
+  "admins": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "$2b$10$.Ly9Z51CuWno/5v9tF.wW.T1LAMByVNpwcXSsUqQOHxnU4ONeQ5j6",
+      "name": "Hospital Admin"
+    }
+  ],
+  "patients": [
+    {
+      "id": 1,
+      "name": "Priya Singh",
+      "age": 22,
+      "gender": "Female",
+      "mobile": "8888888888",
+      "govt_id": "XYZ456",
+      "created_at": "2026-06-14T18:11:12.316Z"
+    },
+    {
+      "id": 2,
+      "name": "Riya",
+      "age": "20",
+      "gender": "Female",
+      "mobile": "1234567899",
+      "govt_id": "12345678",
+      "address": "",
+      "created_at": "2026-06-15T08:24:10.208Z"
+    },
+    {
+      "id": 3,
+      "name": "Riya",
+      "age": "20",
+      "gender": "Female",
+      "mobile": "1234567899",
+      "govt_id": "12345678",
+      "address": "",
+      "created_at": "2026-06-15T08:30:54.256Z"
+    },
+    {
+      "id": 4,
+      "name": "Riya",
+      "age": "20",
+      "gender": "Female",
+      "mobile": "1234567899",
+      "govt_id": "12345678",
+      "address": "",
+      "created_at": "2026-06-15T08:33:22.965Z"
+    },
+    {
+      "id": 5,
+      "name": "Riya",
+      "age": "20",
+      "gender": "Female",
+      "mobile": "1234567899",
+      "govt_id": "12345678",
+      "address": "",
+      "created_at": "2026-06-15T08:36:42.318Z"
+    },
+    {
+      "id": 6,
+      "name": "Riya",
+      "age": "20",
+      "gender": "Female",
+      "mobile": "1234567899",
+      "govt_id": "12345678",
+      "address": "",
+      "created_at": "2026-06-15T08:54:15.681Z"
+    },
+    {
+      "id": 7,
+      "name": "Riya",
+      "age": "20",
+      "gender": "Female",
+      "mobile": "1234567899",
+      "govt_id": "12345678",
+      "address": "",
+      "created_at": "2026-06-16T08:07:59.820Z"
+    },
+    {
+      "id": 8,
+      "name": "riya",
+      "age": "20",
+      "gender": "Female",
+      "mobile": "8888888888",
+      "govt_id": "2334422444",
+      "address": "",
+      "created_at": "2026-06-16T08:32:59.820Z"
+    }
+  ],
+  "bills": [
+    {
+      "id": 1,
+      "bill_no": "BILL1781460672317",
+      "patient_id": 1,
+      "total_amount": 500,
+      "payment_mode": "UPI",
+      "payment_status": "paid",
+      "created_at": "2026-06-14T18:11:12.318Z"
+    },
+    {
+      "id": 2,
+      "bill_no": "BILL1781511850208",
+      "patient_id": 2,
+      "total_amount": 3600,
+      "payment_mode": "UPI",
+      "payment_status": "paid",
+      "created_at": "2026-06-15T08:24:10.209Z"
+    },
+    {
+      "id": 3,
+      "bill_no": "BILL1781512254256",
+      "patient_id": 3,
+      "total_amount": 600,
+      "payment_mode": "UPI",
+      "payment_status": "paid",
+      "created_at": "2026-06-15T08:30:54.256Z"
+    },
+    {
+      "id": 4,
+      "bill_no": "BILL1781598779820",
+      "patient_id": 8,
+      "total_amount": 200,
+      "payment_mode": "Bank",
+      "payment_status": "paid",
+      "created_at": "2026-06-16T08:32:59.820Z"
+    }
+  ],
+  "bill_items": [
+    {
+      "id": 1,
+      "bill_id": 1,
+      "test_id": 1,
+      "test_name": "X-Ray",
+      "price": 500
+    },
+    {
+      "id": 2,
+      "bill_id": 2,
+      "test_id": "2",
+      "test_name": "Blood Test",
+      "price": 200
+    },
+    {
+      "id": 3,
+      "bill_id": 2,
+      "test_id": "5",
+      "test_name": "MRI Scan",
+      "price": 3000
+    },
+    {
+      "id": 4,
+      "bill_id": 2,
+      "test_id": "13",
+      "test_name": "Blood Sugar PP",
+      "price": 100
+    },
+    {
+      "id": 5,
+      "bill_id": 2,
+      "test_id": "24",
+      "test_name": "Iron Test",
+      "price": 300
+    },
+    {
+      "id": 6,
+      "bill_id": 3,
+      "test_id": "2",
+      "test_name": "Blood Test",
+      "price": 200
+    },
+    {
+      "id": 7,
+      "bill_id": 3,
+      "test_id": "14",
+      "test_name": "HbA1c",
+      "price": 400
+    },
+    {
+      "id": 8,
+      "bill_id": 4,
+      "test_id": "1",
+      "test_name": "X-Ray",
+      "price": 500
+    },
+    {
+      "id": 9,
+      "bill_id": 4,
+      "test_id": "12",
+      "test_name": "Blood Sugar Fasting",
+      "price": 100
+    },
+    {
+      "id": 10,
+      "bill_id": 4,
+      "test_id": "27",
+      "test_name": "Eye Test",
+      "price": 200
+    },
+    {
+      "id": 11,
+      "bill_id": 5,
+      "test_id": "3",
+      "test_name": "ECG",
+      "price": 300
+    },
+    {
+      "id": 12,
+      "bill_id": 6,
+      "test_id": "2",
+      "test_name": "Blood Test",
+      "price": 200
+    },
+    {
+      "id": 13,
+      "bill_id": 6,
+      "test_id": "2",
+      "test_name": "Blood Test",
+      "price": 200
+    },
+    {
+      "id": 14,
+      "bill_id": 4,
+      "test_id": "2",
+      "test_name": "Blood Test",
+      "price": 200
+    }
+  ],
+  "tests": [
+    {
+      "id": 1,
+      "name": "X-Ray",
+      "price": 500,
+      "category": "Radiology"
+    },
+    {
+      "id": 2,
+      "name": "Blood Test",
+      "price": 200,
+      "category": "Pathology"
+    },
+    {
+      "id": 3,
+      "name": "ECG",
+      "price": 300,
+      "category": "Cardiology"
+    },
+    {
+      "id": 4,
+      "name": "Urine Test",
+      "price": 150,
+      "category": "Pathology"
+    },
+    {
+      "id": 5,
+      "name": "MRI Scan",
+      "price": 3000,
+      "category": "Radiology"
+    },
+    {
+      "id": 6,
+      "name": "CT Scan",
+      "price": 2500,
+      "category": "Radiology"
+    },
+    {
+      "id": 7,
+      "name": "Ultrasound",
+      "price": 800,
+      "category": "Radiology"
+    },
+    {
+      "id": 8,
+      "name": "Thyroid Test",
+      "price": 600,
+      "category": "Pathology"
+    },
+    {
+      "id": 9,
+      "name": "Liver Function Test",
+      "price": 700,
+      "category": "Pathology"
+    },
+    {
+      "id": 10,
+      "name": "Kidney Function Test",
+      "price": 650,
+      "category": "Pathology"
+    },
+    {
+      "id": 11,
+      "name": "Lipid Profile",
+      "price": 550,
+      "category": "Pathology"
+    },
+    {
+      "id": 12,
+      "name": "Blood Sugar Fasting",
+      "price": 100,
+      "category": "Pathology"
+    },
+    {
+      "id": 13,
+      "name": "Blood Sugar PP",
+      "price": 100,
+      "category": "Pathology"
+    },
+    {
+      "id": 14,
+      "name": "HbA1c",
+      "price": 400,
+      "category": "Pathology"
+    },
+    {
+      "id": 15,
+      "name": "Complete Blood Count",
+      "price": 250,
+      "category": "Pathology"
+    },
+    {
+      "id": 16,
+      "name": "Dengue Test",
+      "price": 800,
+      "category": "Pathology"
+    },
+    {
+      "id": 17,
+      "name": "Malaria Test",
+      "price": 300,
+      "category": "Pathology"
+    },
+    {
+      "id": 18,
+      "name": "Typhoid Test",
+      "price": 350,
+      "category": "Pathology"
+    },
+    {
+      "id": 19,
+      "name": "HIV Test",
+      "price": 500,
+      "category": "Pathology"
+    },
+    {
+      "id": 20,
+      "name": "Hepatitis B",
+      "price": 600,
+      "category": "Pathology"
+    },
+    {
+      "id": 21,
+      "name": "Vitamin D Test",
+      "price": 1200,
+      "category": "Pathology"
+    },
+    {
+      "id": 22,
+      "name": "Vitamin B12",
+      "price": 900,
+      "category": "Pathology"
+    },
+    {
+      "id": 23,
+      "name": "Calcium Test",
+      "price": 200,
+      "category": "Pathology"
+    },
+    {
+      "id": 24,
+      "name": "Iron Test",
+      "price": 300,
+      "category": "Pathology"
+    },
+    {
+      "id": 25,
+      "name": "Chest X-Ray",
+      "price": 600,
+      "category": "Radiology"
+    },
+    {
+      "id": 26,
+      "name": "Bone Density Test",
+      "price": 1500,
+      "category": "Radiology"
+    },
+    {
+      "id": 27,
+      "name": "Eye Test",
+      "price": 200,
+      "category": "Ophthalmology"
+    },
+    {
+      "id": 28,
+      "name": "Hearing Test",
+      "price": 300,
+      "category": "ENT"
+    },
+    {
+      "id": 29,
+      "name": "Stool Test",
+      "price": 150,
+      "category": "Pathology"
+    },
+    {
+      "id": 30,
+      "name": "Sputum Test",
+      "price": 200,
+      "category": "Pathology"
+    },
+    {
+      "id": 31,
+      "name": "COVID-19 RT-PCR",
+      "price": 500,
+      "category": "Pathology"
+    },
+    {
+      "id": 32,
+      "name": "COVID-19 Antigen",
+      "price": 200,
+      "category": "Pathology"
+    },
+    {
+      "id": 33,
+      "name": "Pregnancy Test",
+      "price": 100,
+      "category": "Pathology"
+    },
+    {
+      "id": 34,
+      "name": "PSA Test",
+      "price": 800,
+      "category": "Pathology"
+    },
+    {
+      "id": 35,
+      "name": "Allergy Test",
+      "price": 2000,
+      "category": "Pathology"
+    },
+    {
+      "id": 36,
+      "name": "ECG Stress Test",
+      "price": 1500,
+      "category": "Cardiology"
+    },
+    {
+      "id": 37,
+      "name": "Echo Cardiogram",
+      "price": 2000,
+      "category": "Cardiology"
+    },
+    {
+      "id": 38,
+      "name": "EEG",
+      "price": 1500,
+      "category": "Neurology"
+    },
+    {
+      "id": 39,
+      "name": "EMG",
+      "price": 1800,
+      "category": "Neurology"
+    },
+    {
+      "id": 40,
+      "name": "Biopsy",
+      "price": 3000,
+      "category": "Pathology"
+    },
+    {
+      "id": 41,
+      "name": "Culture Test",
+      "price": 500,
+      "category": "Pathology"
+    },
+    {
+      "id": 42,
+      "name": "CRP Test",
+      "price": 400,
+      "category": "Pathology"
+    },
+    {
+      "id": 43,
+      "name": "D-Dimer Test",
+      "price": 700,
+      "category": "Pathology"
+    },
+    {
+      "id": 44,
+      "name": "Fibrinogen Test",
+      "price": 600,
+      "category": "Pathology"
+    },
+    {
+      "id": 45,
+      "name": "Testosterone Test",
+      "price": 900,
+      "category": "Pathology"
+    },
+    {
+      "id": 46,
+      "name": "Cortisol Test",
+      "price": 700,
+      "category": "Pathology"
+    },
+    {
+      "id": 47,
+      "name": "Sleep Study",
+      "price": 5000,
+      "category": "Neurology"
+    },
+    {
+      "id": 48,
+      "name": "PFT Test",
+      "price": 800,
+      "category": "Pulmonology"
+    },
+    {
+      "id": 49,
+      "name": "Holter Monitor",
+      "price": 2500,
+      "category": "Cardiology"
+    },
+    {
+      "id": 50,
+      "name": "Bone Marrow Test",
+      "price": 4000,
+      "category": "Pathology"
+    }
+  ]
+}
